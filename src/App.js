@@ -1,8 +1,30 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import api from './api';
 import './App.css';
 import './index.js';  
 
 function App() {
+
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      api.post('/', formData)
+        .then(response => {
+          console.log('Image uploaded successfully:', response.data);
+          // Дополнительные действия после успешной загрузки
+        })
+        .catch(error => {
+          console.error('Error uploading image:', error);
+          // Дополнительные действия в случае ошибки загрузки
+        });
+    }};
 
     useEffect(() => {
       
@@ -250,7 +272,7 @@ function App() {
 
                 <div className="wrapperform">
                   <form className="form" action="#">
-                    <input className="file-input" type="file" name="file" hidden/>
+                    <input className="file-input" type="file" name="file" onChange={handleFileChange} hidden/>
                     <i className="fas fa-cloud-upload-alt"></i>
                     <p>Загрузите изображение формата jpg, png.</p>
                   </form>
