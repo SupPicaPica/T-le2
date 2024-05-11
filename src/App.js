@@ -1,64 +1,89 @@
-import { useState, useEffect } from 'react';
-import api from './api';
+import { useEffect } from 'react';
+import './con_back.js';
 import './App.css';
-import './index.js';  
+import './index.js';
+import api from './api.js';  
+
+
 
 function App() {
-
-  const [file, setFile] = useState(null);
-
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setFile(selectedFile);
-
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      api.post('/', formData)
-        .then(response => {
-          console.log('Image uploaded successfully:', response.data);
-          // Дополнительные действия после успешной загрузки
-        })
-        .catch(error => {
-          console.error('Error uploading image:', error);
-          // Дополнительные действия в случае ошибки загрузки
-        });
-    }};
-
-    useEffect(() => {
-      
-      const fileInput = document.querySelector(".file-input");
-      const form = document.querySelector(".form");
-      
-      const handleClick = () => {
-        fileInput.click();
-      };
-
-  if (!form.onclick) {
-    form.addEventListener("click", handleClick);
-  }
-      
-      fileInput.onchange = ({target}) => {
-        let file = target.files[0];
-        if (file) {
-          let fileName = file.name;
-          if (fileName.length >= 12) {
-            let splitName = fileName.split('.');
-            fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
-          }
-          uploadFile(fileName);
-        }
-      };
   
-      function uploadFile(name) {
-        let xhr = new XMLHttpRequest();
-        xhr.open("POST", "php/upload.php");
-        xhr.upload.addEventListener("progress", ({loaded, total}) => {
+  useEffect(() => {
+    const fileInput = document.querySelector(".file-input");
+    const form = document.querySelector(".form");
+
+    let loaded = 0; // Объявляем переменную loaded
+    let total = 0; // Объявляем переменную total
+
+    const handleClick = () => {
+      fileInput.click();
+    };
+
+    if (!form.onclick) {
+      form.addEventListener("click", handleClick);
+    }
+
+    fileInput.onchange = async ({ target }) => {
+      let file = target.files[0];
+      if (file) {
+        let fileName = file.name;
+        if (fileName.length >= 12) {
+          let splitName = fileName.split('.');
+          fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
+        }
+        uploadFile(fileName, fileInput);
+      }
+    };
+
+    function getRandomInt(a, b) {
+      // Получаем случайное число в диапазоне [a, b] (включительно)
+      return Math.floor(Math.random() * (b - a + 1)) + a;
+    }
+
+    async function photo_select(i) {
+      var id = -1;
+      switch (i) {
+        case 0:
+          id = getRandomInt(0, 6);
+          break;
+        case 1:
+          id = 0;
+          break;
+        case 2:
+          id = getRandomInt(0, 10);
+          break;
+        case 3:
+          id = getRandomInt(0, 5);
+          break;
+        case 4:
+          id = getRandomInt(0, 5);
+          break;
+        case 5:
+          id = getRandomInt(0, 5);
+          break;
+        case 6:
+          id = getRandomInt(0, 6);
+          break;
+      }
+      var path = `assets/${i}/(${id}).png`;
+      console.log(path);
+      return path;
+    }
+
+    async function uploadFile(name, fileInput) {
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      const response = await api.post('/yolo_detection', formData, {
+        onUploadProgress: (progressEvent) => {
+          const { loaded: loadedBytes, total: totalBytes } = progressEvent;
+          loaded = loadedBytes; // Присваиваем значение loaded
+          total = totalBytes; // Присваиваем значение total
+
           let fileLoaded = Math.floor((loaded / total) * 100);
           let fileTotal = Math.floor(total / 1000);
           let fileSize;
-          (fileTotal < 1024) ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024*1024)).toFixed(2) + " MB";
+          (fileTotal < 1024) ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024 * 1024)).toFixed(2) + " MB";
           let progressHTML = `<li class="rowtwo">
                                 <i class="fas fa-file-alt"></i>
                                 <div class="contenttwo">
@@ -73,7 +98,7 @@ function App() {
                               </li>`;
           document.querySelector(".uploaded-area").classList.add("onprogress");
           document.querySelector(".progress-area").innerHTML = progressHTML;
-          if (loaded == total) {
+          if (loaded === total) {
             document.querySelector(".progress-area").innerHTML = "";
             let uploadedHTML = `<li class="rowtwo">
                                   <div class="contenttwo upload">
@@ -87,16 +112,62 @@ function App() {
             document.querySelector(".uploaded-area").classList.remove("onprogress");
             document.querySelector(".uploaded-area").insertAdjacentHTML("afterbegin", uploadedHTML);
           }
-        });
-        let data = new FormData(form);
-        xhr.send(data);
-      }
-      return () => {
-        form.removeEventListener("click", handleClick);
-      };
+        }
+      });
+      console.log('Image uploaded successfully:');
+      var json_string = response.data.json_string;
+      console.log(json_string);
 
-    });
+      let foto = `<div class="sticker">+
+
+      <canvas url="${name}" id="canvas">Обновите ваш браузер или смените его.</canvas>           
+  </div>`;
+document.querySelector(".contenttwo").insertAdjacentHTML("afterbegin", foto);
+
+var canvas = document.getElementById("canvas");
+canvas.width  = 800;
+canvas.height = 800;
+var ctx = canvas.getContext('2d');
+ 
+a1({ target: { files: [fileInput.files[0]] } });
+
+function a1(e) {
+  var URL = window.webkitURL || window.URL;
+  var url = URL.createObjectURL(e.target.files[0]);
+  var img = new Image();
+  img.src = url;
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0);
+  }
+};
+
+      var dataArray = JSON.parse(json_string);
+      dataArray.forEach(function (data) {
+        var id = data.id;
+        var clas_id = parseInt(data.clas_id);
+        console.log(clas_id);
+        var clas_name = data.clas_name;
+        var left_up_x = parseInt(data.left_up_x);
+        var left_up_y = parseInt(data.left_up_y);
+        var left_down_x = parseInt(data.left_down_x); //сюды
+        var left_down_y = parseInt(data.left_down_y); //сюды
+        var right_down_x = parseInt(data.right_down_x);
+        var right_down_y = parseInt(data.right_down_y);
+        var right_up_x = parseInt(data.right_up_x);
+        var right_up_y = parseInt(data.right_up_y);
+        var height = left_up_x - left_down_x + 1; //выосота выделения
+        var weight = right_up_y - left_up_y + 1; //ширина выделения
+        var path_photo = photo_select(clas_id); //путь к картинке которую надо сюда разместить. Размеры ее сожми под высоту и ширину
+        console.log(path_photo);
+        //тут добавляй на фото данное выделение. Я их не сохраняю, так что после скобок они исчезают (это цикл)
+      });
+      // Дополнительные действия после успешной загрузки
+    }
   
+    return () => {
+      form.removeEventListener("click", handleClick);
+    };
+  }, []);
   return (
     <div className="App">
   <meta name="csrf-token-name" content="csrftoken" />
@@ -271,8 +342,8 @@ function App() {
                 <h1 className="info-tiles-container__title">Примерь наш стиль на свою торговую точку</h1><ul className="unstyled-list info-tiles">
 
                 <div className="wrapperform">
-                  <form className="form" action="#">
-                    <input className="file-input" type="file" name="file" onChange={handleFileChange} hidden/>
+                  <form id="form_1"  className="form" action="#">
+                    <input id="input_pole" className="file-input" type="file" name="file" hidden/>
                     <i className="fas fa-cloud-upload-alt"></i>
                     <p>Загрузите изображение формата jpg, png.</p>
                   </form>
