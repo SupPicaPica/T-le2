@@ -12,8 +12,8 @@ function App() {
     const fileInput = document.querySelector(".file-input");
     const form = document.querySelector(".form");
 
-    let loaded = 0; // Объявляем переменную loaded
-    let total = 0; // Объявляем переменную total
+    let loaded = 0;
+    let total = 0;
 
     const handleClick = () => {
       fileInput.click();
@@ -31,12 +31,11 @@ function App() {
           let splitName = fileName.split('.');
           fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
         }
-        uploadFile(fileName, fileInput);
+        await uploadFile(fileName, fileInput);
       }
     };
 
     function getRandomInt(a, b) {
-      // Получаем случайное число в диапазоне [a, b] (включительно)
       return Math.floor(Math.random() * (b - a + 1)) + a;
     }
 
@@ -77,13 +76,14 @@ function App() {
       const response = await api.post('/yolo_detection', formData, {
         onUploadProgress: (progressEvent) => {
           const { loaded: loadedBytes, total: totalBytes } = progressEvent;
-          loaded = loadedBytes; // Присваиваем значение loaded
-          total = totalBytes; // Присваиваем значение total
+          loaded = loadedBytes;
+          total = totalBytes;
 
           let fileLoaded = Math.floor((loaded / total) * 100);
           let fileTotal = Math.floor(total / 1000);
           let fileSize;
-          (fileTotal < 1024) ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024 * 1024)).toFixed(2) + " MB";
+          fileTotal < 1024 ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024 * 1024)).toFixed(2) + " MB";
+
           let progressHTML = `<li class="rowtwo">
                                 <i class="fas fa-file-alt"></i>
                                 <div class="contenttwo">
@@ -98,6 +98,7 @@ function App() {
                               </li>`;
           document.querySelector(".uploaded-area").classList.add("onprogress");
           document.querySelector(".progress-area").innerHTML = progressHTML;
+
           if (loaded === total) {
             document.querySelector(".progress-area").innerHTML = "";
             let uploadedHTML = `<li class="rowtwo">
@@ -114,32 +115,23 @@ function App() {
           }
         }
       });
+
       console.log('Image uploaded successfully:');
-      var json_string = response.data.json_string;
+
+      let json_string = response.data.json_string; // Define json_string after the response
       console.log(json_string);
 
-      let foto = `<div class="sticker">+
+      let foto = `<div class="sticker">
+                    <canvas url="${name}" id="canvas">Обновите ваш браузер или смените его.</canvas>           
+                  </div>`;
+      document.querySelector(".canvas").insertAdjacentHTML("afterbegin", foto);
 
-      <canvas url="${name}" id="canvas">Обновите ваш браузер или смените его.</canvas>           
-  </div>`;
-document.querySelector(".contenttwo").insertAdjacentHTML("afterbegin", foto);
+      var canvas = document.getElementById("canvas");
+      canvas.width = 800;
+      canvas.height = 800;
+      var ctx = canvas.getContext('2d'); // Declare ctx within the scope
 
-var canvas = document.getElementById("canvas");
-canvas.width  = 800;
-canvas.height = 800;
-var ctx = canvas.getContext('2d');
- 
-a1({ target: { files: [fileInput.files[0]] } });
-
-function a1(e) {
-  var URL = window.webkitURL || window.URL;
-  var url = URL.createObjectURL(e.target.files[0]);
-  var img = new Image();
-  img.src = url;
-  img.onload = function(){
-    ctx.drawImage(img, 0, 0);
-  }
-};
+      a1({ target: { files: [fileInput.files[0]] } });
 
       var dataArray = JSON.parse(json_string);
       dataArray.forEach(function (data) {
@@ -149,25 +141,36 @@ function a1(e) {
         var clas_name = data.clas_name;
         var left_up_x = parseInt(data.left_up_x);
         var left_up_y = parseInt(data.left_up_y);
-        var left_down_x = parseInt(data.left_down_x); //сюды
-        var left_down_y = parseInt(data.left_down_y); //сюды
+        var left_down_x = parseInt(data.left_down_x);
+        var left_down_y = parseInt(data.left_down_y);
         var right_down_x = parseInt(data.right_down_x);
         var right_down_y = parseInt(data.right_down_y);
         var right_up_x = parseInt(data.right_up_x);
         var right_up_y = parseInt(data.right_up_y);
-        var height = left_up_x - left_down_x + 1; //выосота выделения
-        var weight = right_up_y - left_up_y + 1; //ширина выделения
-        var path_photo = photo_select(clas_id); //путь к картинке которую надо сюда разместить. Размеры ее сожми под высоту и ширину
+        var height = left_up_x - left_down_x + 1;
+        var weight = right_up_y - left_up_y + 1;
+        var path_photo = photo_select(clas_id);
         console.log(path_photo);
-        //тут добавляй на фото данное выделение. Я их не сохраняю, так что после скобок они исчезают (это цикл)
       });
-      // Дополнительные действия после успешной загрузки
     }
-  
+
+    function a1(e) {
+      var URL = window.webkitURL || window.URL;
+      var url = URL.createObjectURL(e.target.files[0]);
+      var img = new Image();
+      img.src = url;
+      img.onload = function () {
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+      }
+    }
+
     return () => {
       form.removeEventListener("click", handleClick);
     };
-  }, []);
+  });
+
   return (
     <div className="App">
   <meta name="csrf-token-name" content="csrftoken" />
@@ -351,6 +354,10 @@ function a1(e) {
                   <section className="uploaded-area"></section>
                 </div>
                 </ul></section></section></div>
+
+                <div className='canvas'>
+
+                </div>
 
 
                 <div data-cartridge-type="MobileAppBlock">
