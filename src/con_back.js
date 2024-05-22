@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 function back() {
 
 document.addEventListener('DOMContentLoaded', function() {
-    var url = "http://192.168.0.10:8000/yolo_detection"
+    var url = "http://192.168.0.13:8000/yolo_detection"
     useEffect(() => {
     var form1 = document.getElementById("form_1");
 

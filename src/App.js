@@ -1,19 +1,129 @@
-import { useEffect } from 'react';
+import { useEffect, useState, Component } from 'react';
 import './con_back.js';
 import './App.css';
 import './index.js';
 import api from './api.js';  
+import html2canvas from 'html2canvas';
+import { createRoot } from 'react-dom/client';
+import { Stage, Layer, Image as KonvaImage } from 'react-konva';
+import useImage from 'use-image';
 
 
 
 function App() {
-  
-  useEffect(() => {
-    const fileInput = document.querySelector(".file-input");
-    const form = document.querySelector(".form");
 
-    let loaded = 0;
-    let total = 0;
+  const [showDialog, setShowDialog] = useState(false);
+
+  const handleButtonClick = () => {
+    setShowDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+  };
+
+
+
+  useEffect(() => {
+    let newX, newY;
+
+    let imageHeight;
+    var moving = false;
+    var image, id_2;
+    var selectedImage = null;
+    function move_mouse(e){
+      var newX = e.pageX-10;
+      var newY = e.pageY-850;
+      console.log(newY);
+      image.style.left = newX + "px";
+      image.style.top = newY + "px";
+  
+    }
+
+    const moveTouch = (e) => {
+      const touch = e.touches[0];
+      newX = touch.pageX - 10;
+      newY = touch.pageY - 850;
+      
+      image.style.left = newX + "px";
+      image.style.top = newY + "px";
+      
+
+    };
+
+    
+
+    function delete_mobile()
+    {
+      if (selectedImage)
+        {
+          console.log('delete');
+          selectedImage.remove();
+          selectedImage = null;
+        }
+    }
+    document.getElementById('delete-button').addEventListener("click", delete_mobile);
+
+    function add_menu_pic(src, id_2, e) {
+      const foto1Element = document.getElementById("back_foto");
+
+      var path_2 = `
+      <img key="img_${id_2}"  id="img_${id_2}" src="${src}" style="position:absolute;top: 500px; left: 550px; width: 4.25%; height: auto;"   />
+  `
+  console.log(path_2);
+  foto1Element.insertAdjacentHTML('afterend', path_2);
+  console.log(id_2);
+  document.getElementById(`img_${id_2}`).addEventListener("mousedown", initialClick, false);
+  document.getElementById(`img_${id_2}`).addEventListener("touchstart", initialClick, false);
+  document.getElementById(`img_${id_2}`).addEventListener("touchend", initialClick, false);
+
+  document.getElementById(`img_${id_2}`).addEventListener("dblclick", delete_photo, false);
+
+    }
+
+
+    function initialClick(e) {
+      var status = document.getElementById('delete-button').style.opacity;
+
+      if(moving){
+        document.removeEventListener("mousemove", move_mouse);
+        document.removeEventListener("touchmove", moveTouch);
+
+        moving = !moving;
+        return;
+      }
+      if (selectedImage)
+        {
+
+          selectedImage.classList.remove('seleected');
+          
+        }
+        selectedImage = e.target;
+        selectedImage.classList.add('seleected');
+      moving = !moving;
+      image = this;
+      document.addEventListener("mousemove", move_mouse, false);
+      document.addEventListener("touchmove", moveTouch, false);
+
+    }
+
+      function delete_photo (e) {
+        console.log(selectedImage);
+
+        if (selectedImage)
+          {
+            console.log('delete');
+            selectedImage.remove();
+            selectedImage = null;
+          }
+      }
+    
+
+     const div_root1 = document.getElementById("root1");
+
+
+    const fileInput = document.querySelector('.file-input');
+    const form = document.querySelector('.form');
 
     const handleClick = () => {
       fileInput.click();
@@ -24,117 +134,172 @@ function App() {
     }
 
     fileInput.onchange = async ({ target }) => {
-      let file = target.files[0];
+      const file = target.files[0];
       if (file) {
         let fileName = file.name;
-        if (fileName.length >= 12) {
-          let splitName = fileName.split('.');
-          fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
+        const validExtensions = ['image/jpeg', 'image/png'];
+
+        if (!validExtensions.includes(file.type)) {
+          alert('Загрузите файл разрешения JPG или PNG');
+          fileInput.value = '';
+          return;
         }
+
+        if (fileName.length >= 12) {
+          const splitName = fileName.split('.');
+          fileName = `${splitName[0].substring(0, 13)}... .${splitName[1]}`;
+        }
+
         await uploadFile(fileName, fileInput);
       }
     };
 
-    function getRandomInt(a, b) {
-      return Math.floor(Math.random() * (b - a + 1)) + a;
+    
+
+    var root2 = document.getElementById("root2");
+    var add_menu = () => {
+      console.log("correct add 1");
+      var i_1 = 0;
+      for (var i = 0; i<=15; i++)
+        {
+          var path_1 = `<img id="menu_${i}" src="${i}.png" style="width: 6.25%; height: auto" />`;
+          console.log(path_1);
+          console.log(root2.id);
+          root2.insertAdjacentHTML("afterbegin", path_1);
+
+        }
+      
+      document.getElementById(`menu_1`).addEventListener("mousedown", (event) => add_menu_pic('1.png', id_2++, event), false);
+      document.getElementById(`menu_2`).addEventListener("mousedown", (event) => add_menu_pic('2.png', id_2++, event), false);
+      document.getElementById(`menu_3`).addEventListener("mousedown", (event) => add_menu_pic('3.png', id_2++, event), false);
+      document.getElementById(`menu_4`).addEventListener("mousedown", (event) => add_menu_pic('4.png', id_2++, event), false);
+      document.getElementById(`menu_5`).addEventListener("mousedown", (event) => add_menu_pic('5.png', id_2++, event), false);
+      document.getElementById(`menu_6`).addEventListener("mousedown", (event) => add_menu_pic('6.png', id_2++, event), false);
+      document.getElementById(`menu_7`).addEventListener("mousedown", (event) => add_menu_pic('7.png', id_2++, event), false);
+      document.getElementById(`menu_8`).addEventListener("mousedown", (event) => add_menu_pic('8.png', id_2++, event), false);
+      document.getElementById(`menu_9`).addEventListener("mousedown", (event) => add_menu_pic('9.png', id_2++, event), false);
+      document.getElementById(`menu_10`).addEventListener("mousedown", (event) => add_menu_pic('10.png', id_2++, event), false);
+      document.getElementById(`menu_11`).addEventListener("mousedown", (event) => add_menu_pic('11.png', id_2++, event), false);
+      document.getElementById(`menu_12`).addEventListener("mousedown", (event) => add_menu_pic('12.png', id_2++, event), false);
+      document.getElementById(`menu_13`).addEventListener("mousedown", (event) => add_menu_pic('13.png', id_2++, event), false);
+      document.getElementById(`menu_14`).addEventListener("mousedown", (event) => add_menu_pic('14.png', id_2++, event), false);
+      document.getElementById(`menu_15`).addEventListener("mousedown", (event) => add_menu_pic('15.png', id_2++, event), false);
+      
     }
 
-    async function photo_select(i) {
-      var id = -1;
+
+
+
+    const getRandomInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+
+    const photoSelect = async (i) => {
+      let id = -1;
       switch (i) {
-        case 0:
-          id = getRandomInt(0, 6);
-          break;
-        case 1:
-          id = 0;
-          break;
-        case 2:
-          id = getRandomInt(0, 10);
-          break;
-        case 3:
-          id = getRandomInt(0, 5);
-          break;
-        case 4:
-          id = getRandomInt(0, 5);
-          break;
-        case 5:
-          id = getRandomInt(0, 5);
-          break;
-        case 6:
-          id = getRandomInt(0, 6);
-          break;
+        case 0: id = getRandomInt(2, 6); break;
+        case 1: id = 1; break;
+        case 2: id = getRandomInt(1, 10); break;
+        case 3: id = getRandomInt(1, 5); break;
+        case 4: id = getRandomInt(1, 4); break;
+        case 5: id = getRandomInt(1, 5); break;
+        case 6: id = getRandomInt(1, 6); break;
+        default: break;
       }
-      var path = `assets/${i}/(${id}).png`;
+      const path = `/assets/${i}/${id}.png`;
       console.log(path);
       return path;
-    }
+    };
 
-    async function uploadFile(name, fileInput) {
+    const uploadFile = async (name, fileInput) => {
       const formData = new FormData();
       formData.append('file', fileInput.files[0]);
 
       const response = await api.post('/yolo_detection', formData, {
         onUploadProgress: (progressEvent) => {
-          const { loaded: loadedBytes, total: totalBytes } = progressEvent;
-          loaded = loadedBytes;
-          total = totalBytes;
+          const { loaded, total } = progressEvent;
+          const fileLoaded = Math.floor((loaded / total) * 100);
+          const fileTotal = Math.floor(total / 1000);
+          const fileSize = fileTotal < 1024 ? `${fileTotal} KB` : `${(loaded / (1024 * 1024)).toFixed(2)} MB`;
 
-          let fileLoaded = Math.floor((loaded / total) * 100);
-          let fileTotal = Math.floor(total / 1000);
-          let fileSize;
-          fileTotal < 1024 ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024 * 1024)).toFixed(2) + " MB";
-
-          let progressHTML = `<li class="rowtwo">
-                                <i class="fas fa-file-alt"></i>
-                                <div class="contenttwo">
-                                  <div class="details">
-                                    <span class="name">${name} • Uploading</span>
-                                    <span class="percent">${fileLoaded}%</span>
-                                  </div>
-                                  <div class="progress-bar">
-                                    <div class="progress" style="width: ${fileLoaded}%"></div>
-                                  </div>
-                                </div>
-                              </li>`;
-          document.querySelector(".uploaded-area").classList.add("onprogress");
-          document.querySelector(".progress-area").innerHTML = progressHTML;
+          const progressHTML = `
+            <li class="rowtwo">
+              <i class="fas fa-file-alt"></i>
+              <div class="contenttwo">
+                <div class="details">
+                  <span class="name">${name} • Uploading</span>
+                  <span class="percent">${fileLoaded}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress" style="width: ${fileLoaded}%"></div>
+                </div>
+              </div>
+            </li>`;
+          document.querySelector('.uploaded-area').classList.add('onprogress');
+          document.querySelector('.progress-area').innerHTML = progressHTML;
 
           if (loaded === total) {
-            document.querySelector(".progress-area").innerHTML = "";
-            let uploadedHTML = `<li class="rowtwo">
-                                  <div class="contenttwo upload">
-                                    <div class="details">
-                                      <span class="name">${name} • Uploaded</span>
-                                      <span class="size">${fileSize}</span>
-                                    </div>
-                                  </div>
-                                  <i class="fas fa-check"></i>
-                                </li>`;
-            document.querySelector(".uploaded-area").classList.remove("onprogress");
-            document.querySelector(".uploaded-area").insertAdjacentHTML("afterbegin", uploadedHTML);
+            document.querySelector('.progress-area').innerHTML = '';
+            const uploadedHTML = `
+              <li class="rowtwo">
+                <div class="contenttwo upload">
+                  <div class="details">
+                    <span class="name">${name} • Uploaded</span>
+                    <span class="size">${fileSize}</span>
+                  </div>
+                </div>
+                <i class="fas fa-check"></i>
+              </li>`;
+            document.querySelector('.uploaded-area').classList.remove('onprogress');
+            document.querySelector('.uploaded-area').insertAdjacentHTML('afterbegin', uploadedHTML);
           }
-        }
+        },
       });
 
       console.log('Image uploaded successfully:');
-
-      let json_string = response.data.json_string; // Define json_string after the response
+      const json_string = response.data.json_string;
       console.log(json_string);
 
-      let foto = `<div class="sticker">
-                    <canvas url="${name}" id="canvas">Обновите ваш браузер или смените его.</canvas>           
-                  </div>`;
-      document.querySelector(".canvas").insertAdjacentHTML("afterbegin", foto);
+      const foto = `
+        <Stage width={window.innerWidth} height={window.innerHeight}>
+          <Layer id="layer1">
+            <URLImage src="${URL.createObjectURL(fileInput.files[0])}" x={10} y={10} />
+          </Layer>
+        </Stage>
+        <img class='img' src="${URL.createObjectURL(fileInput.files[0])}" id="back_foto" alt="" />
 
-      var canvas = document.getElementById("canvas");
-      canvas.width = 800;
-      canvas.height = 800;
-      var ctx = canvas.getContext('2d'); // Declare ctx within the scope
+      `;
+      const foto1 = `
+      
+      <button id="save-button" style="display:none;">Сохранить</button>
+      <button id="cancel-button" style="display:none;">Отмена</button>
+    `;
 
-      a1({ target: { files: [fileInput.files[0]] } });
+     const root_0 =  document.getElementById('root1');
+     root_0.insertAdjacentHTML('afterbegin', foto1);
+     root_0.insertAdjacentHTML('afterbegin', foto);
+     const imageUrl = URL.createObjectURL(fileInput.files[0]);
+     const img = new Image();
+     img.onload = function() {
+         imageHeight = this.naturalHeight; // Сохраняем высоту изображения в переменную
+         console.log('Высота изображения:', imageHeight);
 
-      var dataArray = JSON.parse(json_string);
-      dataArray.forEach(function (data) {
+
+         let foto_2;
+
+     document.getElementById('edit-button').addEventListener("click", function(){
+      html2canvas(document.getElementById("root1")).then(canvas => {
+        let link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = 'content.png';
+        link.click();
+     })});
+
+     
+
+let id_1;
+
+let photo_path;
+      const dataArray = JSON.parse(json_string);
+      const photoPromises = dataArray.map(data => {
         var id = data.id;
         var clas_id = parseInt(data.clas_id);
         console.log(clas_id);
@@ -147,32 +312,74 @@ function App() {
         var right_down_y = parseInt(data.right_down_y);
         var right_up_x = parseInt(data.right_up_x);
         var right_up_y = parseInt(data.right_up_y);
-        var height = left_up_x - left_down_x + 1;
-        var weight = right_up_y - left_up_y + 1;
-        var path_photo = photo_select(clas_id);
-        console.log(path_photo);
+        var height = left_up_y - left_down_y + 1;
+        var weight = right_up_x - left_up_x + 1;
+        console.log(right_up_x+" "+left_up_x+" "+weight);
+        id_1 = id;
+        console.log(imageHeight);
+
+        var up_x = parseInt(imageHeight, 10) - (left_down_y-(height/3));
+        console.log(up_x);
+        id_2 = id;
+        return photoSelect(clas_id).then(path => {
+          return `
+        <img key="img_${id}"  id="img_${id}" src="${path}" style="position:absolute;top: ${up_x}px; left: ${left_down_x+(weight/3)+450}px; width: auto; height: ${height/2}px;"   />
+    `;
+
+        })
+
+        
       });
-    }
 
-    function a1(e) {
-      var URL = window.webkitURL || window.URL;
-      var url = URL.createObjectURL(e.target.files[0]);
-      var img = new Image();
-      img.src = url;
-      img.onload = function () {
-        var canvas = document.getElementById("canvas");
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-      }
-    }
+      const foto2Element = document.getElementById("back_foto");
 
+
+      Promise.all(photoPromises).then(foto2Array => {
+        var k = 0;
+        foto2Array.forEach(foto2 => {
+
+          console.log(foto2);
+          foto2Element.insertAdjacentHTML('afterend', foto2);  
+          document.getElementById(`img_${k}`).addEventListener("mousedown", initialClick, false);
+          document.getElementById(`img_${k}`).addEventListener("touchstart", initialClick, false);
+          document.getElementById(`img_${k}`).addEventListener("touchend", initialClick, false);
+
+          document.getElementById(`img_${k}`).addEventListener("dblclick", delete_photo, false);
+
+          k++; 
+ });
+          document.getElementById('edit-button').style.opacity = 1;
+          document.getElementById('delete-button').style.opacity = 1;
+          document.getElementById('quest-button').style.opacity = 1;
+
+
+          add_menu();
+
+      });
+     };
+     img.src = imageUrl;
+
+
+        
+
+    };
+    
+    const container = document.getElementById('root1');
+    const root = createRoot(container);
+    document.addEventListener('DOMContentLoaded', function() {
+      root.render(<App />);
+  });
     return () => {
       form.removeEventListener("click", handleClick);
+     
     };
-  });
+  }, []);
 
-  return (
+
+
+  return(
     <div className="App">
+      
   <meta name="csrf-token-name" content="csrftoken" />
   <meta name="csrf-token-value" content="17c6cddb830dc22944939d788760b9847d7829fef850b2bb06e0a1f0ba8809a61d89bf4a9bba5d77" />
   <meta name="hmac-token-name" content="Ajax-Token" />
@@ -354,12 +561,21 @@ function App() {
                   <section className="uploaded-area"></section>
                 </div>
                 </ul></section></section></div>
-
-                <div className='canvas'>
-
+                <div className='cont' id='root2'></div>
+                <div className='cont' id='root1'>
                 </div>
 
-
+                <button className='button-save' id="edit-button">Сохранить</button>
+                <button className='button-delete' id="delete-button">Удалить</button>
+                
+                <button className='button-quest' id="quest-button"onClick={handleButtonClick}>?</button>
+      {showDialog && (
+        <div className="dialog-overlay">
+          <div className="dialog-box">
+            <p>После загрузки фотографии дождитесь, <br/>пока нейронная сеть размести элементы. <br/>После, из строки выше вы можете добавить любой<br/> понравившийся элемент и двигать его.<br/> Для удаления элемента нужно или нажать кнопку удалить <br/>(при этом будет удалён последний двигаемый элемент) <br/>или двойной клик.</p>
+            <button onClick={handleCloseDialog}>Закрыть</button></div>
+        </div>
+      )}
                 <div data-cartridge-type="MobileAppBlock">
                   <section data-hydration-on-demand="true">
                     <section className="mobile-app-block">
@@ -376,7 +592,10 @@ function App() {
                                             <div className="footer-block__separator" /><ul className="footer-block-main-links unstyled-list flex flex_align-center"><li className="footer-block-main-links-item footer-block-main-links-item_active footer-block-main-links-item_none"><a className="footer-block-main-links-item__link gtm-new-navigation-link footer-block-main-links-item__link_active" href="/home">Частным лицам</a></li><li className="footer-block-main-links-item footer-block-main-links-item_none">
                                             <a className="footer-block-main-links-item__link gtm-new-navigation-link" href="/business">Бизнесу</a></li><li className="footer-block-main-links-item footer-block-main-links-item_none"><a className="footer-block-main-links-item__link gtm-new-navigation-link" href="/bolshe/offers">Скидки и кэшбэк</a></li><li className="footer-block-main-links-item footer-block-main-links-item_none"><a className="footer-block-main-links-item__link gtm-new-navigation-link" href="/financial-services">Финсервисы</a></li><li className="footer-block-main-links-item footer-block-main-links-item_none"><a className="footer-block-main-links-item__link gtm-new-navigation-link" href="/journal">Черным по белому</a></li><li className="footer-block-main-links-item footer-block-main-links-item_none"><a className="footer-block-main-links-item__link gtm-new-navigation-link" href="/about">О Tele2</a></li></ul><div className="footer-block__separator" /><div className="footer-block__bottom-block"><div className="footer-block__bottom-block-left"><div className="footer-block__info">С 4 апреля 2013 года Теле2 Россия Интернешнл Селлулар БВ и ее аффилированные лица не принадлежат или не являются аффилированными с Теле2 АБ и любой ее дочерней компанией. Товарный знак Tele2 используется на основании лицензии от Теле2 АБ или ее дочерней компании.</div></div><div className="footer-block__bottom-block-right"><div className="footer-block__info">Продолжая использовать наш сайт, вы даете согласие на обработку файлов cookie в соответствии с <a href="https://s3.tele2.ru/ds-site/docs/terms/cookie-politics.pdf" target="_blank">Политикой Компаний Группы Tele2</a> в области использования файлов cookie, <a href="https://s3.tele2.ru/ds-site/docs/terms/rules-recommendation-technologies.pdf" target="_blank">использование рекомендательных технологий</a>, а также соглашаетесь с <a href="https://s3.tele2.ru/ds-site/docs/other/personal-data-security-politics.pdf" target="_blank">Политикой обработки и защиты персональных данных</a> и <a href="https://s3.tele2.ru/ds-site/docs/terms/rules-for-using-personal-account.pdf" target="_blank">Правилами пользования личным кабинетом</a>. | <a href="/shop/info">Оплата и доставка</a>.</div><div className="footer-block__copyright">18+ © Tele2 Россия, 2024</div></div></div></div></div></section></footer></section></div></div></div></div></div></div></div></div></div></div><div /></div></div>
 </div>);
+
     }
+
+
 
 
 export default App;
