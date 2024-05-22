@@ -351,6 +351,7 @@ let photo_path;
           document.getElementById('edit-button').style.opacity = 1;
           document.getElementById('delete-button').style.opacity = 1;
           document.getElementById('quest-button').style.opacity = 1;
+          document.getElementById('root2').style.opacity = 1;
 
 
           add_menu();
